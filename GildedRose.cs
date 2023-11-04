@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace csharp
 {
@@ -7,9 +8,65 @@ namespace csharp
     {
         IList<Item> Items;
 
+        private readonly List<Rule> _qualityUpdateRules;
+        private readonly List<Rule> _sellInRules;
+
         public GildedRose(IList<Item> Items)
         {
             this.Items = Items;
+            
+            _sellInRules = new List<Rule>()
+            {
+                // SulfurasHandOfRagnaros specific
+                new(item => item.Name == Constants.SulfurasHandOfRagnaros, item => { }),
+                
+                // base for all items
+                new(item => true, item => item.SellIn--, Constants.BaseRulePriority)
+            };
+            
+            _qualityUpdateRules = new List<Rule>()
+            {
+                // no changes for SulfurasHandOfRagnaros
+                new(item => item.Name == Constants.SulfurasHandOfRagnaros, item => { }),
+
+                // rule ConjuredManaCake
+                new(item => item.Name == Constants.ConjuredManaCake && item.SellIn >= 0,
+                    item => { ClampQuality(item, -2); }),
+
+                // rule ConjuredManaCake
+                new(item => item.Name == Constants.ConjuredManaCake && item.SellIn < 0,
+                    item => { ClampQuality(item, -4); }),
+
+                // rule AgedBrie
+                new(item => item.Name == Constants.AgedBrie && item.SellIn >= 0,
+                    item => { ClampQuality(item, 1); }),
+
+                // rule AgedBrie
+                new(item => item.Name == Constants.AgedBrie && item.SellIn < 0,
+                    item => { ClampQuality(item, 2); }),
+
+                // rule BackstagePassesToATafkal80EtcConcert
+                new(item => item.Name == Constants.BackstagePassesToATafkal80EtcConcert && item.SellIn < 0,
+                    item => { ClampQuality(item, -1 * item.Quality); }),
+
+                // rule BackstagePassesToATafkal80EtcConcert
+                new(item => item.Name == Constants.BackstagePassesToATafkal80EtcConcert && item.SellIn < 5,
+                    item => { ClampQuality(item, 3); }),
+
+                // rule BackstagePassesToATafkal80EtcConcert
+                new(item => item.Name == Constants.BackstagePassesToATafkal80EtcConcert && item.SellIn < 10,
+                    item => { ClampQuality(item, 2); }),
+
+                // rule BackstagePassesToATafkal80EtcConcert
+                new(item => item.Name == Constants.BackstagePassesToATafkal80EtcConcert && item.SellIn >= 10,
+                    item => { ClampQuality(item, 1); }),
+
+                // base
+                new(item => item.SellIn >= 0, item => { ClampQuality(item, -1); }, Constants.BaseRulePriority),
+
+                // base
+                new(item => item.SellIn < 0, item => { ClampQuality(item, -2); }, Constants.BaseRulePriority)
+            };
         }
 
         public void UpdateQuality()
@@ -30,57 +87,22 @@ namespace csharp
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             
-            switch (item.Name)
-            {
-                case Constants.SulfurasHandOfRagnaros:
-                    // SulfurasHandOfRagnaros is legendary and does not lose it's quality
-                    break;
-                case Constants.AgedBrie:
-                    ClampQuality(item, item.SellIn < 0 ? 2 : 1);
-                    break;
-                case Constants.ConjuredManaCake:
-                    ClampQuality(item, item.SellIn < 0 ? -4 : -2);
-                    break;
-
-                case Constants.BackstagePassesToATafkal80EtcConcert:
-                    switch (item.SellIn)
-                    {
-                        // drop quality after sell in
-                        case < 0:
-                            ClampQuality(item, -1 * item.Quality);
-                            break;
-                        // 5 days before 
-                        case < 5:
-                            ClampQuality(item, 3);
-                            break;
-                        // 10 days before
-                        case < 10:
-                            ClampQuality(item, 2);
-                            break;
-                        // usual increase
-                        default:
-                            ClampQuality(item, 1);
-                            break;
-                    }
-                    break;
-                default:
-                    ClampQuality(item, item.SellIn < 0 ? -2 : -1);
-                    break;
-            }
+            var qualityUpdateRule = _qualityUpdateRules.OrderByDescending(r => r.Priority).FirstOrDefault(r => r.Predicate(item));
+            qualityUpdateRule?.Action(item);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="item"></param>
-        private static void UpdateSellIn(Item item)
+        private void UpdateSellIn(Item item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            
-            if (item.Name != Constants.SulfurasHandOfRagnaros) 
-                item.SellIn -= 1;
+
+            var sellInRule = _sellInRules.OrderByDescending(r => r.Priority).FirstOrDefault(r => r.Predicate(item));
+            sellInRule?.Action(item);
         }
-        
+
         /// <summary>
         /// 
         /// </summary>

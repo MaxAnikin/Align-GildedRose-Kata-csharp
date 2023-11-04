@@ -11,4 +11,5 @@ public static class Constants
     public const string AgedBrie = "Aged Brie";
     public const string DexterityVest = "+5 Dexterity Vest";
     public const string ConjuredManaCake = "Conjured Mana Cake";
+    public const int BaseRulePriority = -10;
 }
