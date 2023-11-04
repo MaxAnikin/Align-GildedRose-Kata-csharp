@@ -16,16 +16,19 @@ namespace csharp
         {
             foreach (var item in Items)
             {
+                UpdateSellIn(item);
                 UpdateItemQuality(item);
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         private void UpdateItemQuality(Item item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            
-            if (item.Name != Constants.SulfurasHandOfRagnaros)
-                item.SellIn -= 1;
             
             switch (item.Name)
             {
@@ -33,7 +36,7 @@ namespace csharp
                     // SulfurasHandOfRagnaros is legendary and does not lose it's quality
                     break;
                 case Constants.AgedBrie:
-                    item.ChangeQuality(item.SellIn < 0 ? 2 : 1);
+                    ClampQuality(item, item.SellIn < 0 ? 2 : 1);
                     break;
 
                 case Constants.BackstagePassesToATafkal80EtcConcert:
@@ -41,26 +44,50 @@ namespace csharp
                     {
                         // drop quality after sell in
                         case < 0:
-                            item.ChangeQuality(-1 * item.Quality);
+                            ClampQuality(item, -1 * item.Quality);
                             break;
                         // 5 days before 
                         case < 5:
-                            item.ChangeQuality(3);
+                            ClampQuality(item, 3);
                             break;
                         // 10 days before
                         case < 10:
-                            item.ChangeQuality(2);
+                            ClampQuality(item, 2);
                             break;
                         // usual increase
                         default:
-                            item.ChangeQuality(1);
+                            ClampQuality(item, 1);
                             break;
                     }
                     break;
                 default:
-                    item.ChangeQuality(item.SellIn < 0 ? -2 : -1);
+                    ClampQuality(item, item.SellIn < 0 ? -2 : -1);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        private static void UpdateSellIn(Item item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            
+            if (item.Name != Constants.SulfurasHandOfRagnaros) 
+                item.SellIn -= 1;
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="qualityChange"></param>
+        private void ClampQuality(Item item, int qualityChange)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+
+            item.Quality = Math.Clamp(item.Quality + qualityChange, Constants.MinQuantity, Constants.MaxQuantity);
         }
     }
 }
