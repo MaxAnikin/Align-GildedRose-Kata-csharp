@@ -24,23 +24,28 @@ namespace csharp
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
 
-            if (item.Name == Constants.AgedBrie || item.Name == Constants.BackstagePassesToATafkal80EtcConcert)
+            switch (item.Name)
             {
-                item.ChangeQuality(1);
+                case Constants.SulfurasHandOfRagnaros:
+                    // SulfurasHandOfRagnaros is legendary and does not lose it's quality
+                    break;
+                case Constants.AgedBrie:
+                    item.ChangeQuality(1);
+                    break;
 
-                if (item.Name == Constants.BackstagePassesToATafkal80EtcConcert)
-                {
+                case Constants.BackstagePassesToATafkal80EtcConcert:
+                    item.ChangeQuality(1);
+
                     if (item.SellIn < 11)
                         item.ChangeQuality(1);
 
                     if (item.SellIn < 6)
                         item.ChangeQuality(1);
-                }
-            }
-            else
-            {
-                if (item.Name != Constants.SulfurasHandOfRagnaros)
+
+                    break;
+                default:
                     item.ChangeQuality(-1);
+                    break;
             }
 
             if (item.Name != Constants.SulfurasHandOfRagnaros)
