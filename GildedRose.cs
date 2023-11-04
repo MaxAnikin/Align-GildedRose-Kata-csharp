@@ -5,8 +5,6 @@ namespace csharp
 {
     public class GildedRose
     {
-        private const int MaxQuantity = 50;
-        
         IList<Item> Items;
         
         public GildedRose(IList<Item> Items)
@@ -26,37 +24,37 @@ namespace csharp
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             
-            if (item.Name != "Aged Brie" && item.Name != "Backstage passes to a TAFKAL80ETC concert")
+            if (item.Name != Constants.AgedBrie && item.Name != Constants.BackstagePassesToATafkal80EtcConcert)
             {
-                if (item.Quality > 0 && item.Name != "Sulfuras, Hand of Ragnaros")
+                if (item.Quality > Constants.MinQuantity && item.Name != Constants.SulfurasHandOfRagnaros)
                     item.Quality -= 1;
             }
             else
             {
-                if (item.Quality < MaxQuantity)
+                if (item.Quality < Constants.MaxQuantity)
                 {
                     item.Quality += 1;
 
-                    if (item.Name == "Backstage passes to a TAFKAL80ETC concert")
+                    if (item.Name == Constants.BackstagePassesToATafkal80EtcConcert)
                     {
-                        if (item.SellIn < 11 && item.Quality < MaxQuantity)
+                        if (item.SellIn < 11 && item.Quality < Constants.MaxQuantity)
                             item.Quality += 1;
 
-                        if (item.SellIn < 6 && item.Quality < MaxQuantity)
+                        if (item.SellIn < 6 && item.Quality < Constants.MaxQuantity)
                             item.Quality += 1;
                     }
                 }
             }
 
-            if (item.Name != "Sulfuras, Hand of Ragnaros")
+            if (item.Name != Constants.SulfurasHandOfRagnaros)
                 item.SellIn -= 1;
 
-            if (item.SellIn < 0)
-                if (item.Name != "Aged Brie")
+            if (item.SellIn < Constants.MinQuantity)
+                if (item.Name != Constants.AgedBrie)
                 {
-                    if (item.Name != "Backstage passes to a TAFKAL80ETC concert")
+                    if (item.Name != Constants.BackstagePassesToATafkal80EtcConcert)
                     {
-                        if (item.Quality > 0 && item.Name != "Sulfuras, Hand of Ragnaros")
+                        if (item.Quality > Constants.MinQuantity && item.Name != Constants.SulfurasHandOfRagnaros)
                             item.Quality -= 1;
                     }
                     else
@@ -64,7 +62,7 @@ namespace csharp
                 }
                 else
                 {
-                    if (item.Quality < MaxQuantity)
+                    if (item.Quality < Constants.MaxQuantity)
                         item.Quality += 1;
                 }
         }
