@@ -38,6 +38,9 @@ namespace csharp
                 case Constants.AgedBrie:
                     ClampQuality(item, item.SellIn < 0 ? 2 : 1);
                     break;
+                case Constants.ConjuredManaCake:
+                    ClampQuality(item, item.SellIn < 0 ? -4 : -2);
+                    break;
 
                 case Constants.BackstagePassesToATafkal80EtcConcert:
                     switch (item.SellIn)
